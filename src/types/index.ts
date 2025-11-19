@@ -1,7 +1,6 @@
 export interface Message {
     id: number;
-    text: string;
-    subtext: string;
+    text: string;   
 }
 
 export interface Heart {

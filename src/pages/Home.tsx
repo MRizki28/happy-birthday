@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Firework, Heart, Message } from "../types";
 import FireworkUtil from "../utils/FireworkUtil";
 import HeartUtil from "../utils/HeartUtil";
@@ -9,59 +9,43 @@ import { MessageSection } from "../components/MessageSection";
 import { FinalSection } from "../components/FinalSection";
 import { VideoModal } from "../components/VideoModal";
 import { FireworksAnimation } from "../components/FireworkAnimation";
+import { messages } from "../data/Message";
+import song from '../assets/song.mp3';
+import song2 from '../assets/song2.mp3';
+import video from '../assets/video.mp4';
 
 export default function BirthdayWebsite() {
-    // State Management
     const [showMessage, setShowMessage] = useState<boolean>(false);
     const [hearts, setHearts] = useState<Heart[]>([]);
     const [showFireworks, setShowFireworks] = useState<boolean>(false);
     const [showVideo, setShowVideo] = useState<boolean>(false);
     const [fireworks, setFireworks] = useState<Firework[]>([]);
-    const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
-    const [currentSpeakingId, setCurrentSpeakingId] = useState<number | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    // Constants
-    const messages: Message[] = [
-        {
-            id: 1,
-            text: "Selamat Ulang Tahun Sayang! 🎉",
-            subtext: "Hari yang paling ditunggu telah tiba"
-        },
-        {
-            id: 2,
-            text: "Semoga hari spesialmu penuh kebahagiaan",
-            subtext: "Dan dipenuhi dengan senyuman terindah"
-        },
-        {
-            id: 3,
-            text: "Kamu adalah hadiah terindah dalam hidupku",
-            subtext: "Yang membuat setiap hari menjadi istimewa"
-        },
-        {
-            id: 4,
-            text: "Selamat menambah usia yang baru! ❤️",
-            subtext: "Semoga menjadi tahun yang penuh berkah"
-        },
-        {
-            id: 5,
-            text: "Semoga semua impianmu menjadi kenyataan",
-            subtext: "Dan semua doa-doamu dikabulkan"
-        },
-        {
-            id: 6,
-            text: "I Love You So Much! 💕",
-            subtext: "Cinta ini akan terus tumbuh seiring waktu"
-        }
-    ];
+    const videoUrl: string = video;
+    const playList = [song, song2];
 
-    const videoUrl: string = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-
-    // Event Handlers
     const startCelebration = (): void => {
         setShowMessage(true);
+
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+
+        const musicUrl = playList[Math.floor(Math.random() * playList.length)];
+
+        audioRef.current = new Audio(musicUrl);
+        audioRef.current.loop = true;
+        audioRef.current.play().catch(e => console.log(e));
     };
 
     const openGift = (): void => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+
         setShowFireworks(true);
         setFireworks(FireworkUtil.generateFireworks());
 
@@ -73,20 +57,11 @@ export default function BirthdayWebsite() {
     const closeVideo = (): void => {
         setShowVideo(false);
         setShowFireworks(false);
-        window.speechSynthesis.cancel();
-        setIsSpeaking(false);
-        setCurrentSpeakingId(null);
     };
 
-    // Effects
     useEffect(() => {
         setHearts(HeartUtil.generateHearts());
         ViewportUtil.setupMobileViewport();
-
-        // Load voices for speech synthesis
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.getVoices();
-        }
     }, []);
 
     return (
@@ -127,10 +102,6 @@ export default function BirthdayWebsite() {
                             key={message.id}
                             message={message}
                             index={index}
-                            isSpeaking={isSpeaking}
-                            currentSpeakingId={currentSpeakingId}
-                            setIsSpeaking={setIsSpeaking}
-                            setCurrentSpeakingId={setCurrentSpeakingId}
                         />
                     ))}
                     <FinalSection onOpenGift={openGift} />
@@ -141,58 +112,12 @@ export default function BirthdayWebsite() {
             <VideoModal showVideo={showVideo} onClose={closeVideo} videoUrl={videoUrl} />
 
             <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.9); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        
-        @keyframes heartFloat {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-15px) rotate(5deg); }
-          50% { transform: translateY(-8px) rotate(-5deg); }
-          75% { transform: translateY(-12px) rotate(3deg); }
-        }
-        
-        @keyframes candleFlame {
-          0%, 100% { transform: scaleY(1) scaleX(1); }
-          50% { transform: scaleY(1.1) scaleX(0.9); }
-        }
-        
-        @keyframes giftPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.03); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 1.2s ease-out;
-        }
-        
-        html {
-          scroll-behavior: smooth;
-        }
-        
-        body {
-          overflow-x: hidden;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Prevent zoom on inputs */
-        input, select, textarea {
-          font-size: 16px;
-        }
-      `}</style>
+                @keyframes fade-in {
+                  from { opacity: 0; transform: translateY(30px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in { animation: fade-in 1.2s ease-out; }
+            `}</style>
         </div>
     );
-};
+}

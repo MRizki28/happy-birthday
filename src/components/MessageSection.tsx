@@ -1,7 +1,6 @@
 import { useInView } from "../hooks/useInView";
 import { useTypingEffect } from "../hooks/useTypingEffect";
 import type { Message } from "../types";
-import SpeechUtil from "../utils/SpeechUtil";
 import { DateSection } from "./DateSection";
 import { DecorativeElements } from "./DecorativeElement";
 import { MessageCard } from "./MessageCard";
@@ -10,40 +9,15 @@ import { ScrollIndicator } from "./ScrollIndicator";
 interface MessageSectionProps {
     message: Message;
     index: number;
-    isSpeaking: boolean;
-    currentSpeakingId: number | null;
-    setIsSpeaking: (value: boolean) => void;
-    setCurrentSpeakingId: (value: number | null) => void;
 }
 
 export const MessageSection: React.FC<MessageSectionProps> = ({
-    message,
-    isSpeaking,
-    currentSpeakingId,
-    setIsSpeaking,
-    setCurrentSpeakingId
+    message
 }) => {
     const [ref, inView] = useInView(0.4);
-    const { displayedText: mainText, isComplete: mainComplete } = useTypingEffect(
+    const { displayedText: mainText } = useTypingEffect(
         message.text, 80, inView
     );
-    const { displayedText: subText } = useTypingEffect(
-        message.subtext, 60, mainComplete
-    );
-
-    const isCurrentSpeaking = currentSpeakingId === message.id && isSpeaking;
-
-    const handleSpeech = () => {
-        SpeechUtil.speakText(
-            message.text,
-            message.subtext,
-            message.id,
-            isSpeaking,
-            currentSpeakingId,
-            setIsSpeaking,
-            setCurrentSpeakingId
-        );
-    };
 
     return (
         <div
@@ -64,10 +38,7 @@ export const MessageSection: React.FC<MessageSectionProps> = ({
                 <MessageCard
                     inView={inView}
                     mainText={mainText}
-                    subText={subText}
                     message={message}
-                    isCurrentSpeaking={isCurrentSpeaking}
-                    onSpeech={handleSpeech}
                 />
 
                 {/* Date section for first message */}
