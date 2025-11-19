@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Firework, Heart, Message } from "../types";
+import type { Firework, Heart } from "../types";
 import FireworkUtil from "../utils/FireworkUtil";
 import HeartUtil from "../utils/HeartUtil";
 import ViewportUtil from "../utils/ViewportUtil";
